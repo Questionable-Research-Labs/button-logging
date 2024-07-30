@@ -5,6 +5,8 @@ int counter = 0;
 void setupWifi() {
     Serial.print("Connecting to network: ");
     Serial.println(WIFI_SSID);
+    Serial.print("Username:");
+    Serial.println(WIFI_USERNAME);
     WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     WiFi.mode(WIFI_STA);    // init wifi mode
 #if __has_include("esp_eap_client.h")

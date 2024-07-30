@@ -10,3 +10,4 @@ void animation_loop(bool button_pressed, ulong button_press_time);
 
 void color_wipe(uint32_t c, int wait);
 
+void sending_lights();

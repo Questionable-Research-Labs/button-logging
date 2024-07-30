@@ -1,41 +1,61 @@
 
 #include <Arduino.h>
-#include <AceButton.h>
+#include <Bounce2.h>
 #include <Wire.h>
-#include <uoaWifi.h>
-#include <neopixelAnimation.h>
 #include <database.h>
+#include <neopixelAnimation.h>
+#include <uoaWifi.h>
 
-using namespace ace_button;
-
-
-const int BUTTON_PIN = 7;
+const int BUTTON_PIN = 14;
 const int LED_PIN = LED_BUILTIN;
 
 bool button_pressed = 0;
 uint button_pressed_start = 0;
 
-AceButton button(BUTTON_PIN);
+// INSTANTIATE A Button OBJECT FROM THE Bounce2 NAMESPACE
+Bounce2::Button button = Bounce2::Button();
 
-void handleEvent(AceButton* /* button */, uint8_t eventType, uint8_t buttonState) {
+void setup() {
+    Serial.begin(115200);
 
-  // Print out a message for all events.
-  Serial.print(F("handleEvent(): eventType: "));
-  Serial.print(AceButton::eventName(eventType));
-  Serial.print(F("; buttonState: "));
-  Serial.println(buttonState);
+    setup_neopixel();
+    run_startup_animation(1000, false);	 // Hold on 1s for serial to initialize
 
-  // Control the LED only for the Pressed and Released events.
-  // Notice that if the MCU is rebooted while the button is pressed down, no
-  // event is triggered and the LED remains off.
-  switch (eventType) {
-    case AceButton::kEventPressed:
+    // initialize built-in LED as an output
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, LOW);
+
+    Serial.println();
+    setupWifi();
+    run_startup_animation(1000, true);	// Let user know wifi is connected
+
+    // Button uses the built-in pull up register.
+    button.attach(BUTTON_PIN, INPUT_PULLUP);
+    button.interval(25);
+    button.setPressedState(LOW);
+
+    // Check if the button was pressed while booting
+    if (button.read() == LOW) {
+      Serial.println("setup(): button was pressed while booting");
+    }
+}
+void loop() {
+    checkWifi();
+    animation_loop(button_pressed, millis() - button_pressed_start);
+    button.update();
+
+    if (!button.changed()) {
+      return;
+    }
+
+    if (button.pressed()) {
       digitalWrite(LED_PIN, HIGH);
       button_pressed = true;
       button_pressed_start = millis();
 
-      break;
-    case AceButton::kEventReleased:
+      Serial.println("Button was pressed");
+
+    } else if (button.released()) {
       digitalWrite(LED_PIN, LOW);
       button_pressed = false;
 
@@ -43,40 +63,8 @@ void handleEvent(AceButton* /* button */, uint8_t eventType, uint8_t buttonState
       Serial.print("Button was pressed for ");
       Serial.print(pressTime);
       Serial.println("ms");
-
+      
+      sending_lights();
       sendToDB(pressTime);
-      break;
-  }
-}
-
-void setup() {
-    Serial.begin(115200);
-
-    setup_neopixel();
-    run_startup_animation(1000, false); // Hold on 1s for serial to initialize
-    
-
-    Serial.println();
-    setupWifi();
-    run_startup_animation(1000, true); // Let user know wifi is connected
-
-    // initialize built-in LED as an output
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, LOW);
-
-    // Button uses the built-in pull up register.
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
-
-    ButtonConfig* buttonConfig = button.getButtonConfig();
-    buttonConfig->setEventHandler(handleEvent);
-
-    // Check if the button was pressed while booting
-    if (button.isPressedRaw()) {
-      Serial.println("setup(): button was pressed while booting");
     }
-}
-void loop() {
-    checkWifi();
-    animation_loop(button_pressed, button_pressed_start - millis());
-    delay(100);
 }

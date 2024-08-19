@@ -5,6 +5,8 @@ int counter = 0;
 void setupWifi() {
     Serial.print("Connecting to network: ");
     Serial.println(WIFI_SSID);
+    Serial.print("Username:");
+    Serial.println(WIFI_USERNAME);
     WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     WiFi.mode(WIFI_STA);    // init wifi mode
 #if __has_include("esp_eap_client.h")
@@ -34,11 +36,10 @@ void setupWifi() {
 }
 
 void checkWifi() {
-    if (WiFi.status() == WL_CONNECTED) {  // if we are connected to Eduroam network
-	counter = 0;			  // reset counter
-	Serial.println("Wifi is still connected with IP: ");
-	Serial.println(WiFi.localIP());		 // inform user about his IP address
+    if (WiFi.status() == WL_CONNECTED) {	 // if we are connected to Eduroam network
+	counter = 0;				 // reset counter
     } else if (WiFi.status() != WL_CONNECTED) {	 // if we lost connection, retry
+	Serial.println("WiFi connection lost, retrying...");
 	WiFi.begin(WIFI_SSID);
     }
     while (WiFi.status() != WL_CONNECTED) {  // during lost connection, print dots

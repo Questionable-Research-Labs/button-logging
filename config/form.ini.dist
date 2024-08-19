@@ -1,0 +1,9 @@
+; copy–paste this file into `form.ini` and fill the proper values
+[form]
+
+device_class = BUTTON
+form_url = https://docs.google.com/forms/d/<googleID>
+device_name = Button Logger
+id_class = entry.<numbers>
+id_name = entry.<numbers>
+id_push_time = entry.<numbers>

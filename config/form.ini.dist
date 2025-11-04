@@ -2,7 +2,7 @@
 [form]
 
 device_class = BUTTON
-form_url = https://docs.google.com/forms/d/<googleID>
+form_url = https://docs.google.com/forms/d/e/1FAI...fBFDw/
 device_name = Button Logger
 id_class = entry.<numbers>
 id_name = entry.<numbers>

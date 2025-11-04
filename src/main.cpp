@@ -7,7 +7,9 @@
 #include <uoaWifi.h>
 
 const int BUTTON_PIN = 14;
-const int LED_PIN = LED_BUILTIN;
+#ifdef LED_BUILTIN
+  const int LED_PIN = LED_BUILTIN;
+#endif
 
 bool button_pressed = 0;
 uint button_pressed_start = 0;
@@ -21,9 +23,11 @@ void setup() {
     setup_neopixel();
     run_startup_animation(1000, false);	 // Hold on 1s for serial to initialize
 
+#ifdef LED_BUILTIN
     // initialize built-in LED as an output
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
+#endif
 
     Serial.println();
     setupWifi();
@@ -49,14 +53,18 @@ void loop() {
     }
 
     if (button.pressed()) {
+#ifdef LED_BUILTIN
       digitalWrite(LED_PIN, HIGH);
+#endif
       button_pressed = true;
       button_pressed_start = millis();
 
       Serial.println("Button was pressed");
 
     } else if (button.released()) {
+#ifdef LED_BUILTIN
       digitalWrite(LED_PIN, LOW);
+#endif
       button_pressed = false;
 
       uint pressTime = millis() - button_pressed_start;

@@ -5,22 +5,30 @@ int counter = 0;
 void setupWifi() {
     Serial.print("Connecting to network: ");
     Serial.println(WIFI_SSID);
-    Serial.print("Username:");
-    Serial.println(WIFI_USERNAME);
     WiFi.disconnect(true);  // disconnect form wifi to set new wifi connection
     WiFi.mode(WIFI_STA);    // init wifi mode
+
+    if (strlen(WIFI_USERNAME) > 0) {
+        Serial.print("Using enterprise connection with username: ");
+        Serial.println(WIFI_USERNAME);
 #if __has_include("esp_eap_client.h")
-    esp_eap_client_set_identity((uint8_t *)EAP_IDENTITY, strlen(EAP_IDENTITY));	 // provide identity
-    esp_eap_client_set_username((uint8_t *)EAP_IDENTITY, strlen(EAP_IDENTITY));	 // provide username
-    esp_eap_client_set_password((uint8_t *)EAP_PASSWORD, strlen(EAP_PASSWORD));	 // provide password
-    esp_wifi_sta_enterprise_enable();
+        esp_eap_client_set_identity((uint8_t *)EAP_IDENTITY, strlen(EAP_IDENTITY));	 // provide identity
+        esp_eap_client_set_username((uint8_t *)EAP_IDENTITY, strlen(EAP_IDENTITY));	 // provide username
+        esp_eap_client_set_password((uint8_t *)EAP_PASSWORD, strlen(EAP_PASSWORD));	 // provide password
+        esp_wifi_sta_enterprise_enable();
+        WiFi.begin(WIFI_SSID);  // connect to wifi
 #else
-    esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)WIFI_USERNAME, strlen(WIFI_USERNAME));  // provide identity
-    esp_wifi_sta_wpa2_ent_set_username((uint8_t *)WIFI_USERNAME, strlen(WIFI_USERNAME));  // provide username --> identity and username is same
-    esp_wifi_sta_wpa2_ent_set_password((uint8_t *)WIFI_PASSWORD, strlen(WIFI_PASSWORD));  // provide password
-    esp_wifi_sta_wpa2_ent_enable();
+        esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)WIFI_USERNAME, strlen(WIFI_USERNAME));  // provide identity
+        esp_wifi_sta_wpa2_ent_set_username((uint8_t *)WIFI_USERNAME, strlen(WIFI_USERNAME));  // provide username --> identity and username is same
+        esp_wifi_sta_wpa2_ent_set_password((uint8_t *)WIFI_PASSWORD, strlen(WIFI_PASSWORD));  // provide password
+        esp_wifi_sta_wpa2_ent_enable();
+        WiFi.begin(WIFI_SSID);  // connect to wifi
 #endif
-    WiFi.begin(WIFI_SSID);  // connect to wifi
+    } else {
+        Serial.println("Using normal WPA/WPA2 connection.");
+        WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    }
+
     while (WiFi.status() != WL_CONNECTED) {
 	delay(500);
 	Serial.print(".");
